@@ -5,4 +5,4 @@ jobs:
   environment:
     runs-on: ubuntu-20.04
     steps:
-      - run: env 
+      - run: exit 1
