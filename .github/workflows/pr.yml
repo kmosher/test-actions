@@ -20,4 +20,4 @@ jobs:
     if: ${{ always() }}
     steps:
       - run: echo job1 failed
-        if ${{ failure() }}
+        if: ${{ failure() }}
