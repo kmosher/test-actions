@@ -1,8 +1,23 @@
 name: PR
-on: pull_request
+on: push
 
 jobs:
-  environment:
+  job1:
     runs-on: ubuntu-20.04
     steps:
       - run: exit 1
+  
+  job2:
+    runs-on: ubuntu-20.04
+    needs: [job1]
+    if: ${{ failure() }}
+    steps:
+      - run: echo job1 failed
+
+  job3:
+    runs-on: ubuntu-20.04
+    needs: [job1]
+    if: ${{ always() }}
+    steps:
+      - run: echo job1 failed
+        if ${{ failure }}
