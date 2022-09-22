@@ -6,13 +6,6 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - run: exit 0
-  
-  job2:
-    runs-on: ubuntu-20.04
-    needs: [job1]
-    if: ${{ failure() }}
-    steps:
-      - run: echo job1 failed
 
   job3:
     runs-on: ubuntu-20.04
@@ -20,6 +13,6 @@ jobs:
     if: ${{ always() }}
     steps:
       - run: echo job1 failed
-        if: ${{ needs.job1.result == failure }}
+        if: ${{ needs.job1.result == 'failure' }}
       - run: echo job1 succeeded
-        if: ${{ needs.job1.result == success }}
+        if: ${{ needs.job1.result == 'success' }}
