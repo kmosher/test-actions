@@ -5,7 +5,7 @@ jobs:
   job1:
     runs-on: ubuntu-20.04
     steps:
-      - run: exit 0
+      - run: exit 1
 
   job2:
     runs-on: ubuntu-20.04
