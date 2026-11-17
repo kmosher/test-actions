@@ -1,0 +1,31 @@
+name: Q5 Artifact
+on:
+  push:
+    branches: [kmosher/prove-q5]
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  update-stack:
+    name: Update Stack
+    uses: ./.github/workflows/update-stack.yml
+  build-pulumi-admin:
+    name: Build Pulumi Admin
+    uses: ./.github/workflows/build-pulumi-admin.yml
+    with:
+      size-mb: 300
+  publish-pulumi-admin:
+    name: Publish Pulumi Admin
+    needs: [update-stack, build-pulumi-admin]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch the binaries
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: pulumi-admin
+          path: ${{ runner.temp }}/pulumi-admin
+      - name: Check hash
+        run: |
+          got=$(sha256sum "$RUNNER_TEMP/pulumi-admin/pulumi-admin-linux" | cut -d' ' -f1)
+          echo "size=$(stat -c %s "$RUNNER_TEMP/pulumi-admin/pulumi-admin-linux") got=$got want=${{ needs.build-pulumi-admin.outputs.sha }}"
+          test "$got" = "${{ needs.build-pulumi-admin.outputs.sha }}" && echo HASH_MATCH

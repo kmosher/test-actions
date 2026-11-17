@@ -1,0 +1,15 @@
+name: Q7 Grant
+on:
+  push:
+    branches: [kmosher/prove-q7]
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  publish-release:
+    name: Publish Release
+    uses: ./.github/workflows/q7-callee.yml
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write

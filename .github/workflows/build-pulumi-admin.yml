@@ -1,0 +1,31 @@
+name: Build Pulumi Admin
+on:
+  workflow_call:
+    inputs:
+      size-mb: {type: number, default: 1}
+    outputs:
+      sha:
+        value: ${{ jobs.build.outputs.sha }}
+permissions:
+  contents: read
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.mk.outputs.sha }}
+    steps:
+      - id: mk
+        name: Make the binaries
+        run: |
+          mkdir -p "$RUNNER_TEMP/pulumi-admin"
+          head -c ${{ inputs.size-mb }}M /dev/urandom > "$RUNNER_TEMP/pulumi-admin/pulumi-admin-linux"
+          echo "sha=$(sha256sum "$RUNNER_TEMP/pulumi-admin/pulumi-admin-linux" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+      - name: Store the binaries
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: pulumi-admin
+          path: ${{ runner.temp }}/pulumi-admin
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 1

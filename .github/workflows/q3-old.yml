@@ -1,0 +1,16 @@
+name: Q3 Old
+on:
+  push:
+    branches: [kmosher/prove-q3]
+permissions:
+  contents: read
+jobs:
+  update-stack:
+    name: Update Stack
+    uses: ./.github/workflows/update-stack-old.yml
+  update-stack-eu:
+    name: Update EU Stack
+    needs: [update-stack]
+    uses: ./.github/workflows/update-stack.yml
+    with:
+      target-stack: production-eu

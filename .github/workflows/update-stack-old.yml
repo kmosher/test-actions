@@ -1,0 +1,17 @@
+name: Update Stack (old shape)
+on:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  update-stack:
+    name: "Update old"
+    runs-on: ubuntu-latest
+    steps:
+      - run: sleep 20
+  publish-images:
+    name: "Publish Docker Images (old)"
+    needs: [update-stack]
+    runs-on: ubuntu-latest
+    steps:
+      - run: sleep 90

@@ -1,0 +1,17 @@
+name: Q2 Names
+on:
+  push:
+    branches: [kmosher/prove-q2]
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  publish-release:
+    name: Publish Release
+    uses: ./.github/workflows/publish-release.yml
+    permissions:
+      contents: read
+      id-token: write
+  build-pulumi-admin:
+    name: Build Pulumi Admin
+    uses: ./.github/workflows/build-pulumi-admin.yml

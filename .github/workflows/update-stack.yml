@@ -1,0 +1,37 @@
+name: Update Stack
+on:
+  workflow_call:
+    inputs:
+      target-stack: {type: string, default: production}
+      publish-only: {type: boolean, default: false}
+      slack-release: {type: boolean, default: false}
+      sleep: {type: number, default: 20}
+    outputs:
+      ecr_login_url:
+        value: ${{ jobs.update-stack.outputs.ecr_login_url }}
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  update-stack:
+    name: "Update `${{inputs.target-stack}}`"
+    runs-on: ubuntu-latest
+    outputs:
+      ecr_login_url: ${{ steps.out.outputs.ecr }}
+    steps:
+      - name: Echo inputs
+        run: echo "publish-only=${{ inputs.publish-only }} slack-release=${{ inputs.slack-release }}"
+      - name: Sleep (update)
+        if: ${{ !inputs.publish-only }}
+        run: sleep ${{ inputs.sleep }}
+      - name: Upload source maps (guarded by !publish-only)
+        if: ${{ !inputs.publish-only }}
+        run: echo "source maps"
+      - name: Slack (guarded by always() && slack-release)
+        if: ${{ always() && inputs.slack-release }}
+        run: echo "slack"
+      - name: Sleep (publish-only path)
+        if: ${{ inputs.publish-only }}
+        run: sleep ${{ inputs.sleep }}
+      - id: out
+        run: echo "ecr=stub.example/ecr-${{ inputs.target-stack }}" >> "$GITHUB_OUTPUT"

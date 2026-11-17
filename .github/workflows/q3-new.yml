@@ -1,0 +1,38 @@
+name: Q3 New
+on:
+  push:
+    branches: [kmosher/prove-q3]
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  update-stack:
+    name: Update Stack
+    uses: ./.github/workflows/update-stack.yml
+  publish-release:
+    name: Publish Release
+    needs: [update-stack]
+    uses: ./.github/workflows/publish-release.yml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      sleep: 90
+  update-stack-eu:
+    name: Update EU Stack
+    needs: [update-stack]
+    uses: ./.github/workflows/update-stack.yml
+    with:
+      target-stack: production-eu
+  integration-tests:
+    name: Integration Tests
+    needs: [update-stack]
+    runs-on: ubuntu-latest
+    steps:
+      - run: sleep 20
+  notify-deployed-prs:
+    name: Notify deployed PRs
+    needs: [publish-release]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "docker_tag is '${{ needs.publish-release.outputs.docker_tag }}'"

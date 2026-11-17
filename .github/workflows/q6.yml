@@ -1,0 +1,68 @@
+name: Q6 Switch
+on:
+  push:
+    branches: [kmosher/prove-q6-github, kmosher/prove-q6-delivery]
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  switch:
+    name: Read the release switch
+    runs-on: ubuntu-latest
+    outputs:
+      mode: ${{ steps.switch.outputs.mode }}
+    steps:
+      - id: switch
+        run: |
+          case "$GITHUB_REF_NAME" in *delivery) m=delivery;; *) m=github;; esac
+          echo "mode=$m" >> "$GITHUB_OUTPUT"
+  update-stack:
+    name: Update Stack
+    needs: [switch]
+    uses: ./.github/workflows/update-stack.yml
+    with:
+      sleep: 2
+      publish-only: ${{ needs.switch.outputs.mode != 'github' }}
+      slack-release: ${{ needs.switch.outputs.mode == 'github' }}
+  publish-release:
+    name: Publish Release
+    needs: [update-stack]
+    uses: ./.github/workflows/publish-release.yml
+    permissions:
+      contents: read
+      id-token: write
+  delivery:
+    name: Releases run on Delivery
+    needs: [switch]
+    if: needs.switch.outputs.mode == 'delivery'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo delivery
+  integration-tests:
+    name: Integration Tests
+    needs: [switch, update-stack]
+    if: needs.switch.outputs.mode == 'github'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo tests
+  update-stack-eu:
+    name: Update EU Stack
+    needs: [switch, update-stack]
+    uses: ./.github/workflows/update-stack.yml
+    with:
+      target-stack: production-eu
+      sleep: 2
+      publish-only: ${{ needs.switch.outputs.mode != 'github' }}
+      slack-release: ${{ needs.switch.outputs.mode == 'github' }}
+  sentry-release-eu:
+    name: Sentry EU
+    needs: [update-stack-eu]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo sentry
+  notify-deployed-prs:
+    name: Notify deployed PRs
+    needs: [publish-release]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "docker_tag=${{ needs.publish-release.outputs.docker_tag }}"
